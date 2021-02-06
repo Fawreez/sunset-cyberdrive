@@ -11,8 +11,8 @@ unsigned int ID;
 float angle = 0.0;
 float strafe = 0.0;
 float move = 0.0;
-GLuint _textureWall, _textureDoor, _textureGrass, _textureRoof, _textureSky, _textureWindow1, _textureWindow2, _textureFence, _textureArch,
-_textureSunset, textureRoad;
+GLuint textureWall, textureDoor, textureGrass, textureRoof, textureSky, textureWindow1, textureWindow2, textureFence, textureArch,
+textureSunset, textureRoad;
 
 
 void Init();
@@ -45,7 +45,7 @@ void drawMap()
     // Grass
     glPushMatrix();
     	glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, _textureGrass );
+        glBindTexture(GL_TEXTURE_2D, textureGrass );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTranslatef(strafe,0,-10);
@@ -78,7 +78,7 @@ void drawMap()
     // Sky
     glPushMatrix();
     	glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, _textureSunset);
+        glBindTexture(GL_TEXTURE_2D, textureSunset);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTranslatef(strafe,5,-10);
@@ -93,7 +93,7 @@ void drawMap()
 	
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, _textureSky);
+    glBindTexture(GL_TEXTURE_2D, textureSky);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(strafe,5,-10);
@@ -139,16 +139,16 @@ void Init(){
 	glLoadIdentity();
 	glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
 	
-	_textureGrass = loadTexture("./assets/grid.bmp");
-	_textureSky = loadTexture("./assets/sky2.bmp");
-	_textureWall = loadTexture("./assets/wall.bmp");
-	_textureRoof = loadTexture("./assets/roof.bmp");
-	_textureDoor = loadTexture("./assets/door.bmp");
-	_textureWindow1 = loadTexture("./assets/window1.bmp");
-	_textureWindow2 = loadTexture("./assets/window2.bmp");
-	_textureFence = loadTexture("./assets/fence.bmp");
-	_textureArch = loadTexture("./assets/arch.bmp");
-	_textureSunset = loadTexture("./assets/sunset.bmp");
+	textureGrass = loadTexture("./assets/grid.bmp");
+	textureSky = loadTexture("./assets/sky2.bmp");
+	textureWall = loadTexture("./assets/wall.bmp");
+	textureRoof = loadTexture("./assets/roof.bmp");
+	textureDoor = loadTexture("./assets/door.bmp");
+	textureWindow1 = loadTexture("./assets/window1.bmp");
+	textureWindow2 = loadTexture("./assets/window2.bmp");
+	textureFence = loadTexture("./assets/fence.bmp");
+	textureArch = loadTexture("./assets/arch.bmp");
+	textureSunset = loadTexture("./assets/sunset.bmp");
 	textureRoad = loadTexture("./assets/road.bmp");
 }
 
