@@ -5,7 +5,7 @@
 
 using namespace std;
 
-char title[] = "Muhammad Alfarizi & 181511023";
+char title[] = "Sunset Cyberdrive by Muhammad Alfarizi (181511023)";
 int refreshMills = 15;
 unsigned int ID;
 float angle = 0.0;
