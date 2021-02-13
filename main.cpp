@@ -10,8 +10,8 @@ int refreshMills = 15;
 unsigned int ID;
 float angle = 0.0;
 float strafe = 0.0;
-float move = 0.0;
-GLuint textureWall, textureDoor, textureGrass, textureRoof, textureSky, textureWindow1, textureWindow2, textureFence, textureArch,
+float move = -150.0;
+GLuint textureWall, textureDoor, textureGrid, textureRoof, textureSky, textureWindow1, textureWindow2, textureFence, textureArch,
 textureSunset, textureRoad;
 
 
@@ -38,14 +38,18 @@ int main(int argc, char **argv){
 	return 0;
 }
 
+/*
+Draws the map which includes:
+- Skybox
+- Floor
+- Road
+*/
 void drawMap()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    // Grass
+    // Floor
     glPushMatrix();
     	glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, textureGrass );
+        glBindTexture(GL_TEXTURE_2D, textureGrid);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTranslatef(strafe,0,-10);
@@ -68,14 +72,15 @@ void drawMap()
     	glTranslatef(strafe,0,move-10);
     	glRotatef(angle, 0.0, 1.0, 0.0);
     	glBegin(GL_QUADS);
-    		glTexCoord3f(0.0,20.0,0);  glVertex3f(-3,-1.4,100);
-            glTexCoord3f(0.0,0.0,0);  glVertex3f(-3,-1.4,-100);
-            glTexCoord3f(1.0,0.0,0);  glVertex3f(3,-1.4,-100);
-            glTexCoord3f(1.0,20.0,0);  glVertex3f(3,-1.4,100);
+    		glTexCoord3f(0.0,20.0,0);  glVertex3f(-3,-1.4,200);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-3,-1.4,-200);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(3,-1.4,-200);
+            glTexCoord3f(1.0,20.0,0);  glVertex3f(3,-1.4,200);
         glEnd();
         glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
-    // Sky
+	
+    // Skybox
     glPushMatrix();
     	glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, textureSunset);
@@ -98,19 +103,19 @@ void drawMap()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(strafe,5,-10);
     glRotatef(angle, 0.0, 1.0, 0.0);    
-        glBegin(GL_QUADS); //Depan
+        glBegin(GL_QUADS); //Front
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-50,50,50);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-50,-50,50);
             glTexCoord3f(1.0,0.0,0);  glVertex3f(50,-50,50);
             glTexCoord3f(1.0,1.0,0);  glVertex3f(50,50,50);
         glEnd();
-        glBegin(GL_QUADS); //Kanan
+        glBegin(GL_QUADS); //Right
             glTexCoord3f(1.0,1.0,0);  glVertex3f(50,50,-50);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(50,-50,-50);
             glTexCoord3f(1.0,0.0,0);  glVertex3f(50,-50,50);
             glTexCoord3f(0.0,1.0,0);  glVertex3f(50,50,50);
         glEnd();
-        glBegin(GL_QUADS); //Kiri
+        glBegin(GL_QUADS); //Left
             glTexCoord3f(1.0,1.0,0);  glVertex3f(-50,50,-50);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-50,-50,-50);
             glTexCoord3f(1.0,0.0,0);  glVertex3f(-50,-50,50);
@@ -119,12 +124,154 @@ void drawMap()
         glDisable(GL_TEXTURE_2D);
     glPopMatrix();
 
-	glutSwapBuffers();
+	
+}
+
+void drawPlayer()
+{
+	
+	//Car's body
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureArch);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,0);
+    glRotatef(angle, 0.0, 1.0, 0.0);    
+        glBegin(GL_QUADS); //upper back
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.2,-0.5,-2.3);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.2,-0.5,-2.3);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.5,-0.75,-2.3);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.5,-0.75,-2.3);
+        glEnd();
+        
+        glBegin(GL_QUADS); //lower back
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.5,-0.75,-2.3);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.5,-0.75,-2.3);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.3,-1.,-2.3);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.3,-1,-2.3);
+        glEnd();
+        
+        glBegin(GL_QUADS); //upper front
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.5,-3.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.3,-0.5,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.5,-0.75,-3.5);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.5,-0.75,-3.5);
+        glEnd();
+        
+        glBegin(GL_QUADS); //lower front
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.5,-0.75,-3.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.5,-0.75,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.3,-1.,-3.5);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.3,-1,-3.5);
+        glEnd();
+        
+        glBegin(GL_QUADS); //upper left
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.2,-0.5,-2.3);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.3,-0.5,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(-0.5,-0.75,-3.5);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.5,-0.75,-2.3);
+        glEnd();
+        
+        glBegin(GL_QUADS); //upper right
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(0.2,-0.5,-2.3);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.3,-0.5,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.5,-0.75,-3.5);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.5,-0.75,-2.3);
+        glEnd();
+        
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.2,-0.5,-2.3);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.3,-0.5,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.3,-0.5,-3.5);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.2,-0.5,-2.3);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    
+    //Car's turret base
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureRoof);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,0);
+    glRotatef(angle, 0.0, 1.0, 0.0);    
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.3,-2.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.3,-2.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.3,-2.3);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.3,-2.3);
+        glEnd();
+        
+        glBegin(GL_QUADS); //back
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.4,-2.3);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.3,-2.3);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.3,-2.3);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.4,-2.3);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    
+    //Car's turret box
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureFence);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,0);
+    glRotatef(angle, 0.0, 1.0, 0.0);    
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.15,-0.1,-3.0);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.15,-0.1,-3.0);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.15,-0.1,-2.3);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.15,-0.1,-2.3);
+        glEnd();
+        
+        glBegin(GL_QUADS); //back
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.15,-0.3,-2.3);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.15,-0.1,-2.3);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.15,-0.1,-2.3);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.15,-0.3,-2.3);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    
+    //Car's turret barell
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureWall);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,0);
+    glRotatef(angle, 0.0, 1.0, 0.0);    
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.1,-5.0);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.1,-5.0);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.1,-3.0);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.1,-3.0);
+        glEnd();
+        
+        glBegin(GL_QUADS); //back
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.2,-3.0);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.1,-3.0);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.1,-3.0);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.2,-3.0);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    
+
 }
 
 void Display()
 {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 	drawMap();
+	drawPlayer();
+	
+	glutSwapBuffers();
 	
 }
 
@@ -139,7 +286,7 @@ void Init(){
 	glLoadIdentity();
 	glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
 	
-	textureGrass = loadTexture("./assets/grid.bmp");
+	textureGrid = loadTexture("./assets/grid.bmp");
 	textureSky = loadTexture("./assets/sky2.bmp");
 	textureWall = loadTexture("./assets/wall.bmp");
 	textureRoof = loadTexture("./assets/roof.bmp");
@@ -177,11 +324,11 @@ void KeyboardHandler(unsigned char key, int x, int y)
 	    break;
 	case 's':
 		move -= 0.5;
-        if (move < -39) move = -39.0;
+        if (move < -150) move = -150.0;
 		break;
 	case 'w':
 		move += 0.5;
-        if (move > 48) move = 48.0;
+        if (move > 150) move = -150.0;
 		break;
 	case 'q':
 		exit(0);
