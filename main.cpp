@@ -11,8 +11,11 @@ unsigned int ID;
 float angle = 0.0;
 float strafe = 0.0;
 float move = 0.0;
+float bullet = 0.0;
+bool bulletFire = false;
 GLuint textureWall, textureDoor, textureGrid, textureRoof, textureSky, textureWindow1, textureWindow2, textureFence, textureArch,
-textureSunset, textureRoad, textureCar, textureTurretBase, textureTurretBox, textureTurretBarell;
+textureSunset, textureRoad, textureCar, textureTurretBase, textureTurretBox, textureTurretBarell, textureBullet, textureWingCover,
+textureEnemy, textureCockpit, textureEnemyCockpit;
 
 
 void Init();
@@ -32,6 +35,7 @@ int main(int argc, char **argv){
 	
 	glutDisplayFunc(Display);
 	glutReshapeFunc(Reshape);
+	glutTimerFunc(refreshMills, Timer, 0);
 	glutKeyboardFunc(KeyboardHandler);
 	Init();
 	glutMainLoop();
@@ -134,7 +138,26 @@ void drawMap()
 void drawPlayer()
 {
 	
-	//Car's body
+	//Player's cockpit
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureCockpit);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,-10);
+    glRotatef(angle, 0.0, 1.0, 0.0);
+	glTranslatef(0,0,10);
+	glTranslatef(0,0,-3); 
+        glBegin(GL_QUADS); //upper front
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.5,-3.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.3,-0.5,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.5,-0.75,-3.7);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.5,-0.75,-3.7);
+        glEnd();    
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+	
+	//Player's body
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureCar);
@@ -216,7 +239,7 @@ void drawPlayer()
         glDisable(GL_TEXTURE_2D);
     glPopMatrix();
     
-    //Car's turret base
+    //Turret base
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureTurretBase);
@@ -255,7 +278,7 @@ void drawPlayer()
         glDisable(GL_TEXTURE_2D);
     glPopMatrix();
     
-    //Car's turret box
+    //Turret box
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureTurretBox);
@@ -309,7 +332,7 @@ void drawPlayer()
         glDisable(GL_TEXTURE_2D);
     glPopMatrix();
     
-    //Car's turret barell
+    //Turret barell
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureTurretBarell);
@@ -359,18 +382,224 @@ void drawPlayer()
 
 }
 
+void drawBullet()
+{
+	//Player's bullet
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureBullet);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,-10);
+    glRotatef(angle, 0.0, 1.0, 0.0);
+	glTranslatef(0,0,10);
+	glTranslatef(0,0,-bullet-3);     
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.25,-3.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.25,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-3.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.25,-3.1);
+        glEnd();
+        
+        glBegin(GL_QUADS); //bottom
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-3.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.35,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.35,-3.4);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.35,-3.4);
+        glEnd();
+        
+        glBegin(GL_QUADS); //front
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-3.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-3.5);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-3.5);
+        glEnd();
+        
+        glBegin(GL_QUADS); //left
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-3.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(-0.05,-0.25,-3.4);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.35,-3.4);
+        glEnd();
+        
+        glBegin(GL_QUADS); //right
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(0.05,-0.35,-3.5);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.25,-3.5);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-3.4);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-3.4);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
+
+drawEnemy()
+{
+	
+	//Enemy's cockpit
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureEnemyCockpit);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,-7);
+    glRotatef(angle, 0.0, 1.0, 0.0);
+	glTranslatef(0,0,7);
+	glTranslatef(0,0,0);        
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.1,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.1,-0.5,-10);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.1,-0.5,-10);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.3,-0.1,-9);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+	
+	//Enemy's body
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureEnemy);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,-7);
+    glRotatef(angle, 0.0, 1.0, 0.0);
+	glTranslatef(0,0,7);
+	glTranslatef(0,0,0);     
+        glBegin(GL_QUADS); //front
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.1,-0.5,-10);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.1,-0.5,-10);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.1,-0.8,-10);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.1,-0.8,-10);
+        glEnd();
+        
+        glBegin(GL_QUADS); //Back
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.1,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.3,-0.1,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.3,-0.9,-9);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.3,-0.9,-9);
+        glEnd();
+        
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.1,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.1,-0.5,-10);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.1,-0.5,-10);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.3,-0.1,-9);
+        glEnd();
+        
+        glBegin(GL_QUADS); //bottom
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.9,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.1,-0.8,-10);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.1,-0.8,-10);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.3,-0.9,-9);
+        glEnd();
+        
+        glBegin(GL_QUADS); //left
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.1,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.1,-0.5,-10);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(-0.1,-0.8,-10);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.3,-0.9,-9);
+        glEnd();
+        
+        glBegin(GL_QUADS); //right
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(0.3,-0.1,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.1,-0.5,-10);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.1,-0.8,-10);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.3,-0.9,-9);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    
+    //Enemy's wings
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureEnemy);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,-7);
+    glRotatef(angle, 0.0, 1.0, 0.0);
+	glTranslatef(0,0,7);
+	glTranslatef(0,0,0);
+        glBegin(GL_QUADS); //left wing
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.1,-0.36,-9.2);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.5,-0.65,-9.2);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(-0.5,-0.65,-9.6);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.1,-0.37,-9.6);
+        glEnd();
+        
+        glBegin(GL_QUADS); //right wing
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(0.1,-0.36,-9.2);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.5,-0.65,-9.2);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.5,-0.65,-9.6);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.1,-0.37,-9.6);
+        glEnd();
+        
+        glBegin(GL_QUADS); //bottom of wings
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.5,-0.65,-9.2);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.5,-0.65,-9.6);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.5,-0.65,-9.6);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.5,-0.65,-9.2);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+    
+    //Enemy's wing covers
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureWingCover);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,-7);
+    glRotatef(angle, 0.0, 1.0, 0.0);
+	glTranslatef(0,0,7);
+	glTranslatef(0,0,0);
+        glBegin(GL_TRIANGLES); // back left wing cover
+        	glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.1,-0.36,-9.2);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.5,-0.65,-9.2);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(-0.1,-0.65,-9.2);
+        glEnd();
+        
+        glBegin(GL_TRIANGLES); // front left wing cover
+        	glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.1,-0.36,-9.6);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.5,-0.65,-9.6);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(-0.1,-0.65,-9.6);
+        glEnd();
+        
+        glBegin(GL_TRIANGLES); // back right wing cover
+        	glTexCoord3f(0.0,1.0,0);  glVertex3f(0.1,-0.36,-9.2);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.5,-0.65,-9.2);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.1,-0.65,-9.2);
+        glEnd();
+        
+        glBegin(GL_TRIANGLES); // front right wing cover
+        	glTexCoord3f(0.0,1.0,0);  glVertex3f(0.1,-0.36,-9.6);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.5,-0.65,-9.6);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.1,-0.65,-9.6);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
+
 void Display()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	drawMap();
 	drawPlayer();
+	drawBullet();
+	drawEnemy();
 	
 	glutSwapBuffers();
 	
 }
 
 void Timer(int value) {
+	
+	if(bulletFire){
+		bullet = bullet + 0.5;
+	}
+	
+	move += 0.5;
+	if (move > 150) move = -150.0;
+	
    glutPostRedisplay();
    glutTimerFunc(refreshMills, Timer, 0);
 }
@@ -396,6 +625,11 @@ void Init(){
 	textureTurretBase = loadTexture("./assets/turret_base.bmp");
 	textureTurretBox = loadTexture("./assets/turret_box.bmp");
 	textureTurretBarell = loadTexture("./assets/turret_barell.bmp");
+	textureBullet = loadTexture("./assets/bullet.bmp");
+	textureWingCover = loadTexture("./assets/wing_cover.bmp");
+	textureEnemy = loadTexture("./assets/enemy.bmp");
+	textureCockpit = loadTexture("./assets/cockpit.bmp");
+	textureEnemyCockpit = loadTexture("./assets/enemy_cockpit.bmp");
 }
 
 void Reshape(GLsizei width, GLsizei height) {
@@ -421,23 +655,19 @@ void KeyboardHandler(unsigned char key, int x, int y)
         strafe -= 0.5;
         if (strafe < -2.0) strafe = -2.0;
 	    break;
-	case 's':
-		move -= 0.5;
-        if (move < -150) move = -150.0;
-		break;
-	case 'w':
-		move += 0.5;
-        if (move > 150) move = -150.0;
-		break;
-	case 'v':
+	case 'q':
 		angle += 1;
 		if (angle > 360) angle = 0.0;
 		break;
-	case 'b':
+	case 'e':
 		angle -= 1;
         if (angle > 360) angle = 0.0;
 		break;
-	case 'q':
+	case ' ':
+		bulletFire = true;
+		bullet = 0;
+		break;
+	case 'l':
 		exit(0);
 		break;
 	default: 
