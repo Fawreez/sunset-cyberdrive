@@ -8,14 +8,21 @@ using namespace std;
 char title[] = "Sunset Cyberdrive by Muhammad Alfarizi (181511023)";
 int refreshMills = 15;
 unsigned int ID;
-float angle = 0.0;
-float strafe = 0.0;
+float cameraAngle = 0.0;
+float playerPosition = 0.0;
 float move = 0.0;
-float bullet = 0.0;
+float bulletPosition = 0.0;
+float enemyBulletPosition = 0.0;
+float enemyPosition = 2.0;
+float enemyRoll = -5.2;
+int counterFire = 0;
 bool bulletFire = false;
-GLuint textureWall, textureDoor, textureGrid, textureRoof, textureSky, textureWindow1, textureWindow2, textureFence, textureArch,
-textureSunset, textureRoad, textureCar, textureTurretBase, textureTurretBox, textureTurretBarell, textureBullet, textureWingCover,
-textureEnemy, textureCockpit, textureEnemyCockpit;
+bool enemyDirection = false;
+bool playerCollision = false;
+bool enemyCollision = false;
+GLuint  textureGrid, textureSky, textureSunset, textureRoad, textureCar, textureTurretBase, textureTurretBox,
+textureTurretBarell, textureBullet, textureWingCover,
+textureEnemy, textureCockpit, textureEnemyCockpit, textureEnemyBullet;
 
 
 void Init();
@@ -57,9 +64,9 @@ void drawMap()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTranslatef(0,0,-10);
-    	glRotatef(angle, 0.0, 1.0, 0.0);
+    	glRotatef(cameraAngle, 0.0, 1.0, 0.0);
     	glTranslatef(0,0,10);
-    	glTranslatef(strafe,0,0);
+    	glTranslatef(0,0,0);
         glBegin(GL_QUADS);
             glTexCoord3f(0.0,70.0,0);  glVertex3f(-50,-1.5,50);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-50,-1.5,-50);
@@ -76,9 +83,9 @@ void drawMap()
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     	glTranslatef(0,0,-10);
-    	glRotatef(angle, 0.0, 1.0, 0.0);
+    	glRotatef(cameraAngle, 0.0, 1.0, 0.0);
     	glTranslatef(0,0,10);
-    	glTranslatef(strafe,0,move);
+    	glTranslatef(0,0,move);
     	glBegin(GL_QUADS);
     		glTexCoord3f(0.0,20.0,0);  glVertex3f(-2.5,-1.4,200);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-2.5,-1.4,-200);
@@ -94,8 +101,8 @@ void drawMap()
         glBindTexture(GL_TEXTURE_2D, textureSunset);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTranslatef(strafe,5,-10);
-        glRotatef(angle, 0.0, 1.0, 0.0);
+        glTranslatef(0,5,-10);
+        glRotatef(cameraAngle, 0.0, 1.0, 0.0);
         glBegin(GL_QUADS); //Belakang
             glTexCoord3f(0,1,0);  glVertex3f(-50,50,-50);
             glTexCoord3f(0,0,0);  glVertex3f(-50,-50,-50);
@@ -109,8 +116,8 @@ void drawMap()
     glBindTexture(GL_TEXTURE_2D, textureSky);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTranslatef(strafe,5,-10);
-    glRotatef(angle, 0.0, 1.0, 0.0);    
+    glTranslatef(0,5,-10);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);    
         glBegin(GL_QUADS); //Front
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-50,50,50);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-50,-50,50);
@@ -145,9 +152,9 @@ void drawPlayer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-10);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,10);
-	glTranslatef(0,0,-3); 
+	glTranslatef(playerPosition,0,-3); 
         glBegin(GL_QUADS); //upper front
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.5,-3.5);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(0.3,-0.5,-3.5);
@@ -164,9 +171,9 @@ void drawPlayer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-10);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,10);
-	glTranslatef(0,0,-3); 
+	glTranslatef(playerPosition,0,-3); 
         glBegin(GL_QUADS); //upper back
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.2,-0.5,-2.3);
             glTexCoord3f(1.0,1.0,0);  glVertex3f(0.2,-0.5,-2.3);
@@ -246,9 +253,9 @@ void drawPlayer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-10);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,10);
-	glTranslatef(0,0,-3);            
+	glTranslatef(playerPosition,0,-3);            
         glBegin(GL_QUADS); //back
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.5,-2.6);
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.4,-2.6);
@@ -285,9 +292,9 @@ void drawPlayer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-10);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,10);
-	glTranslatef(0,0,-3);    
+	glTranslatef(playerPosition,0,-3);    
         glBegin(GL_QUADS); //top
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.15,-0.2,-3.0);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(0.15,-0.2,-3.0);
@@ -339,9 +346,9 @@ void drawPlayer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-10);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,10);
-	glTranslatef(0,0,-3);     
+	glTranslatef(playerPosition,0,-3);     
         glBegin(GL_QUADS); //top
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.25,-3.5);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.25,-3.5);
@@ -384,21 +391,21 @@ void drawPlayer()
 
 void drawBullet()
 {
-	//Player's bullet
+	//Player's bulletPosition
 	glPushMatrix();
 	glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureBullet);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-10);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,10);
-	glTranslatef(0,0,-bullet-3);     
+	glTranslatef(playerPosition,0,-bulletPosition-3);     
         glBegin(GL_QUADS); //top
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.25,-3.5);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.25,-3.5);
-            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-3.1);
-            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.25,-3.1);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-3.4);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.25,-3.4);
         glEnd();
         
         glBegin(GL_QUADS); //bottom
@@ -413,6 +420,13 @@ void drawBullet()
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-3.5);
             glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-3.5);
             glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-3.5);
+        glEnd();
+        
+        glBegin(GL_QUADS); //back
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-3.4);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-3.4);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-3.4);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-3.4);
         glEnd();
         
         glBegin(GL_QUADS); //left
@@ -442,9 +456,10 @@ drawEnemy()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-7);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,7);
-	glTranslatef(0,0,0);        
+	glTranslatef(enemyPosition,0,0); 
+	glRotatef(enemyRoll, 0, 0, 1);
         glBegin(GL_QUADS); //top
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.3,-0.1,-9);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.1,-0.5,-10);
@@ -461,9 +476,10 @@ drawEnemy()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-7);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,7);
-	glTranslatef(0,0,0);     
+	glTranslatef(enemyPosition,0,0);
+	glRotatef(enemyRoll, 0, 0, 1);
         glBegin(GL_QUADS); //front
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.1,-0.5,-10);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(0.1,-0.5,-10);
@@ -515,9 +531,10 @@ drawEnemy()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-7);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,7);
-	glTranslatef(0,0,0);
+	glTranslatef(enemyPosition,0,0);
+	glRotatef(enemyRoll, 0, 0, 1);
         glBegin(GL_QUADS); //left wing
             glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.1,-0.36,-9.2);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.5,-0.65,-9.2);
@@ -548,9 +565,10 @@ drawEnemy()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTranslatef(0,0,-7);
-    glRotatef(angle, 0.0, 1.0, 0.0);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
 	glTranslatef(0,0,7);
-	glTranslatef(0,0,0);
+	glTranslatef(enemyPosition,0,0);
+	glRotatef(enemyRoll, 0, 0, 1);
         glBegin(GL_TRIANGLES); // back left wing cover
         	glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.1,-0.36,-9.2);
             glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.5,-0.65,-9.2);
@@ -576,6 +594,111 @@ drawEnemy()
         glEnd();
         glDisable(GL_TEXTURE_2D);
     glPopMatrix();
+    
+    //Enemy's gun
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureTurretBarell);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,-7.1);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
+	glTranslatef(0,0,7.1);
+	glTranslatef(enemyPosition,0,0);
+	glRotatef(enemyRoll, 0, 0, 1);
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.25,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.25,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.25,-9.1);
+        glEnd();
+        
+        glBegin(GL_QUADS); //bottom
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.35,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.35,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.35,-9.1);
+        glEnd();
+        
+        glBegin(GL_QUADS); //front
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-9);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-9);
+        glEnd();
+        
+        glBegin(GL_QUADS); //left
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(-0.05,-0.25,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.35,-9.1);
+        glEnd();
+        
+        glBegin(GL_QUADS); //right
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(0.05,-0.35,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.25,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-9.1);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
+
+void drawEnemyBullet()
+{
+	//Enemy's bullet
+	glPushMatrix();
+	glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureEnemyBullet);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTranslatef(0,0,-7.1);
+    glRotatef(cameraAngle, 0.0, 1.0, 0.0);
+	glTranslatef(0,0,7.1);
+	glTranslatef(enemyPosition,0,enemyBulletPosition);     
+        glBegin(GL_QUADS); //top
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.25,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.25,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.25,-9.1);
+        glEnd();
+        
+        glBegin(GL_QUADS); //bottom
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.35,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.35,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.35,-9.1);
+        glEnd();
+        
+        glBegin(GL_QUADS); //front
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-9);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-9);
+        glEnd();
+        
+        glBegin(GL_QUADS); //back
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-9.1);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-9.1);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-9.1);
+        glEnd();
+        
+        glBegin(GL_QUADS); //left
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(-0.05,-0.35,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(-0.05,-0.25,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(-0.05,-0.25,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(-0.05,-0.35,-9.1);
+        glEnd();
+        
+        glBegin(GL_QUADS); //right
+            glTexCoord3f(0.0,1.0,0);  glVertex3f(0.05,-0.35,-9);
+            glTexCoord3f(0.0,0.0,0);  glVertex3f(0.05,-0.25,-9);
+            glTexCoord3f(1.0,0.0,0);  glVertex3f(0.05,-0.25,-9.1);
+            glTexCoord3f(1.0,1.0,0);  glVertex3f(0.05,-0.35,-9.1);
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
 }
 
 void Display()
@@ -583,10 +706,27 @@ void Display()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	drawMap();
-	drawPlayer();
-	drawBullet();
-	drawEnemy();
 	
+	
+	//collision detection
+	if(bulletPosition >= 9 && bulletPosition <= 10 && playerPosition >= enemyPosition-0.3 && playerPosition<= enemyPosition+0.3){
+		enemyCollision = true;	
+	}
+	
+	if(!enemyCollision){
+		drawEnemy();
+		drawEnemyBullet();
+	}
+	
+	if(enemyBulletPosition >= 0 && enemyBulletPosition <= 0.5 && enemyPosition >= playerPosition-0.3 && enemyPosition<= playerPosition+0.3){
+		playerCollision = true;	
+	}
+	
+	if(!playerCollision){
+		drawPlayer();
+		drawBullet();
+	}
+
 	glutSwapBuffers();
 	
 }
@@ -594,7 +734,32 @@ void Display()
 void Timer(int value) {
 	
 	if(bulletFire){
-		bullet = bullet + 0.5;
+		bulletPosition = bulletPosition + 0.5;
+	}
+	
+	if(enemyPosition >= 2.0 ){
+		enemyDirection = true;
+	}
+	if(enemyPosition <= -2.0){
+		enemyDirection = false;
+	}
+	
+	if(enemyDirection){
+		enemyPosition -= 0.07;
+		enemyRoll += 0.2;
+	}
+	else{
+		enemyPosition += 0.07;
+		enemyRoll -= 0.2;
+	}
+	
+	if(!enemyCollision){
+		enemyBulletPosition += 0.03;
+		if(counterFire == 160){
+			enemyBulletPosition = 0;
+			counterFire = 0;
+		}
+		counterFire++;
 	}
 	
 	move += 0.5;
@@ -612,13 +777,6 @@ void Init(){
 	
 	textureGrid = loadTexture("./assets/grid.bmp");
 	textureSky = loadTexture("./assets/sky2.bmp");
-	textureWall = loadTexture("./assets/wall.bmp");
-	textureRoof = loadTexture("./assets/roof.bmp");
-	textureDoor = loadTexture("./assets/door.bmp");
-	textureWindow1 = loadTexture("./assets/window1.bmp");
-	textureWindow2 = loadTexture("./assets/window2.bmp");
-	textureFence = loadTexture("./assets/fence.bmp");
-	textureArch = loadTexture("./assets/arch.bmp");
 	textureSunset = loadTexture("./assets/sunset.bmp");
 	textureRoad = loadTexture("./assets/road.bmp");
 	textureCar = loadTexture("./assets/car.bmp");
@@ -630,6 +788,7 @@ void Init(){
 	textureEnemy = loadTexture("./assets/enemy.bmp");
 	textureCockpit = loadTexture("./assets/cockpit.bmp");
 	textureEnemyCockpit = loadTexture("./assets/enemy_cockpit.bmp");
+	textureEnemyBullet = loadTexture("./assets/enemy_bullet.bmp");
 }
 
 void Reshape(GLsizei width, GLsizei height) {
@@ -647,28 +806,34 @@ void KeyboardHandler(unsigned char key, int x, int y)
 	
 	// d dan f
 	switch (key) {
-	case 'a':  
-		strafe += 0.5;
-		if (strafe > 2.0) strafe = 2.0;
+	case 'd':  
+		playerPosition += 0.5;
+		if (playerPosition > 2.0) playerPosition = 2.0;
 		break;
-	case 'd':
-        strafe -= 0.5;
-        if (strafe < -2.0) strafe = -2.0;
+	case 'a':
+        playerPosition -= 0.5;
+        if (playerPosition < -2.0) playerPosition = -2.0;
 	    break;
 	case 'q':
-		angle += 1;
-		if (angle > 360) angle = 0.0;
+		cameraAngle += 1.5;
+		if (cameraAngle > 360) cameraAngle = 0.0;
 		break;
 	case 'e':
-		angle -= 1;
-        if (angle > 360) angle = 0.0;
+		cameraAngle -= 1.5;
+        if (cameraAngle > 360) cameraAngle = 0.0;
 		break;
 	case ' ':
 		bulletFire = true;
-		bullet = 0;
+		bulletPosition = 0;
 		break;
 	case 'l':
 		exit(0);
+		break;
+	case 'r':
+		playerCollision = false;
+		break;
+	case 'f':
+		enemyCollision = false;
 		break;
 	default: 
 		break;
