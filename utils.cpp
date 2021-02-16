@@ -1,6 +1,5 @@
 #include <windows.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <GL/glut.h>
 #include "utils.h"
 #include "BmpLoader.h"
